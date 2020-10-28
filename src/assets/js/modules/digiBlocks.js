@@ -32,7 +32,17 @@ export default function DigiBlocks() {
   const blockHeight = 82;
   const xShift = blockWidth * 0.5;
   const yShift = blockHeight * 0.25;
-  const colourVariants = ['white', 'yellow', 'black', 'grey', 'light-grey', 'dark-grey', 'blue', 'light-blue', 'dark-blue'];
+  const colourVariants = ['white', 'light-grey', 'light-blue', 'blue', 'black', 'grey', 'dark-grey', 'dark-blue', 'yellow'];
+  const whiteBalance = 0.5;
+  const lightGreyBalance = 0.1668;
+  const lightBlueBalance = 0.1334;
+  // const blueBalance = 0.0333;
+  // const blackBalance = 0.0333;
+  // const greyBalance = 0.0333;
+  // const darkGreyBalance = 0.0333;
+  // const darkBlueBalance = 0.0333;
+  // const yellowBalance = 0.0333;
+
   let blocks = [];
 
   const capitaliseString = (string) => {
@@ -137,16 +147,39 @@ export default function DigiBlocks() {
     fileDownloadTrigger.click();
   };
 
-  const generateColourId = () => {
+  const generateChanceColourId = () => {
+    const r = Math.random();
+    const smallChanceVariants = [3, 4, 5, 6, 7, 8];
+
+    if (r < whiteBalance) {
+      // 50% or 0.5 chance white
+      return 0;
+    }
+    if (r < whiteBalance + lightGreyBalance) {
+      // 16.68% or 0.6668 chance light-grey
+      return 1;
+    }
+    if (r < whiteBalance + lightGreyBalance + lightBlueBalance) {
+      // 13.34% or 0.80002 chance light-blue
+      return 2;
+    }
+    // 19.98% chance of small variant colours or
+    // 3.33% chance for each 'blue', 'black', 'grey', 'dark-grey', 'dark-blue', 'yellow'
+    return smallChanceVariants[Math.round(Math.random() * (smallChanceVariants.length - 1))];
+  };
+
+  const generateColourId = (blank) => {
+    // eslint-disable-next-line no-nested-ternary
     return colourVariants.indexOf(colour) >= 0
       ? colourVariants.indexOf(colour)
-      : Math.round(Math.random() * (colourVariants.length - 1));
+      : !blank ? generateChanceColourId() // only apply colour balance to non blanks
+        : Math.round(Math.random() * (colourVariants.length - 1));
   };
 
   const updateBlockDataColours = () => {
     blocks.forEach((layer) => {
       layer.forEach((block) => {
-        block.colourVariantId = generateColourId();
+        block.colourVariantId = generateColourId(Math.random() > 1 - fineness);
       });
     });
   };
@@ -162,12 +195,13 @@ export default function DigiBlocks() {
 
       for (let j = 0; j < depthUnits * widthUnits; j += 1) {
         // Create block for each x, y, z coordinate with a random colour
+        const r = Math.random();
         const block = {
           x: j % widthUnits,
           y: i,
           z: Math.floor(j / widthUnits),
-          blank: Math.random() > 1 - fineness,
-          colourVariantId: generateColourId(),
+          blank: r > 1 - fineness,
+          colourVariantId: generateColourId(r > 1 - fineness),
         };
 
         blocks[i].push(block);
